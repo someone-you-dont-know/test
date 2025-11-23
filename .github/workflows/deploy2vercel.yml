@@ -19,15 +19,29 @@ jobs:
           EMAIL:   ${{ github.event.head_commit.author.email }}
           MSG:     ${{ github.event.head_commit.message }}
         run: |
-          AUTHOR=${AUTHOR:-${{ github.actor }}}
-          PAYLOAD=$(jq -n \
-            --arg project "$PROJECT" --arg ref "$REF" --arg sha "$SHA" \
-            --arg repoId "$REPO_ID" --arg author "$AUTHOR" --arg email "$EMAIL" --arg msg "$MSG" \
-            '{name:$project, project:$project, target:"production",
-              gitSource:{type:"github", repoId:($repoId|tonumber), ref:$ref, sha:$sha},
-              gitMetadata:{commitAuthorName:$author, commitAuthorEmail:$email,
-                           commitMessage:$msg, commitRef:$ref, commitSha:$sha}}')
-          curl -sS -X POST https://api.vercel.com/v13/deployments \
-            -H "Authorization: Bearer $TOKEN" \
+          # AUTHOR=${AUTHOR:-${{ github.actor }}}
+          # PAYLOAD=$(jq -n \
+          #   --arg project "$PROJECT" --arg ref "$REF" --arg sha "$SHA" \
+          #   --arg repoId "$REPO_ID" --arg author "$AUTHOR" --arg email "$EMAIL" --arg msg "$MSG" \
+          #   '{name:$project, project:$project, target:"production",
+          #     gitSource:{type:"github", repoId:($repoId|tonumber), ref:$ref, sha:$sha},
+          #     gitMetadata:{commitAuthorName:$author, commitAuthorEmail:$email,
+          #                  commitMessage:$msg, commitRef:$ref, commitSha:$sha}}')
+          # curl -sS -X POST https://api.vercel.com/v13/deployments \
+          #   -H "Authorization: Bearer $TOKEN" \
+          #   -H "Content-Type: application/json" \
+          #   -d "$PAYLOAD"
+
+
+          curl -X POST "https://api.vercel.com/v13/deployments" \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
             -H "Content-Type: application/json" \
-            -d "$PAYLOAD"
+            -d '{
+              "name": "$PROJECT",
+              "gitSource": {
+                "type": "github",
+                "repoId": "${{ github.event.repository.id }}",
+                "ref": "$REF",
+                "sha": "${{ github.sha }}"
+              }
+            }'
