@@ -71,6 +71,10 @@ jobs:
       # - name: Deploy
       #   run: vercel --prod --yes --token $VERCEL_TOKEN
 
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
       - name: Deploy to Vercel
         uses: BetaHuhn/deploy-to-vercel-action@v1
         with:
